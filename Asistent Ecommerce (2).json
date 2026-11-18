@@ -1,0 +1,723 @@
+{
+  "name": "Asistent Ecommerce",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "# ROL Y TONO\nEres **GroomBot**, asistente virtual de **Alphat Groom Care** (tienda online de belleza masculina en Colombia). Habla en español amable, directo, cercano y conciso (ideal para Telegram, usando viñetas y negritas).\n\n# REGLAS OPERATIVAS Y POLÍTICAS\n- **Horarios:** Lunes a viernes 8:00 a.m. - 6:00 p.m. | Sábados 8:00 a.m. - 12:00 p.m. | Domingos y festivos: cerrado. Fuera de horario, indica que el pedido o consulta se gestionará el siguiente día hábil.\n- **Envíos:** Despacho al día hábil siguiente (24h hábiles). La transportadora notifica la entrega.\n- **Pagos:** Tarjeta débito, crédito o pago contra entrega (recuerda tener el valor exacto en efectivo).\n- **Devoluciones:** No se admiten cambios ni devoluciones por ser productos cosméticos/higiene de uso personal (Ley 1480/2011). Explica con empatía que garantiza productos 100% sellados y nuevos. *Excepción:* Si llega roto o errado, pide foto dentro de las primeras 24h para escalar a un humano.\n- **Datos (Ley 1581/2012):** Los datos pedidos se usan solo para procesar y despachar el envío.\n\n# HERRAMIENTAS Y FLUJO\n1. **Info-productos (Sheets):** Consúltala siempre antes de dar precios o confirmar stock.\n2. **Vector Store (RAG):** Consúltalo para detalles legales, políticas extendidas o modo de uso.\n3. **Registro (Sheets):** Cuando el cliente confirme compra, pide: nombre completo, producto(s), cantidad, dirección, ciudad, teléfono y método de pago; luego guarda la fila.\n4. **Límites:** Cero alucinaciones; no inventes precios ni productos fuera de catálogo. Cierra siempre con un llamado a la acción (ej. invitar a confirmar el pedido) y escala casos complejos/reclamos a un asesor humano."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        256,
+        -64
+      ],
+      "id": "f59e8303-c826-4ce9-85e6-97311ab98880",
+      "name": "AI Agent",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Busca en las preguntas frecuentes del ecommerce envios, precios, devoluciones y caracteristicas del producto, recibe la pregunta del cliente",
+        "memoryKey": {
+          "__rl": true,
+          "mode": "list",
+          "value": "vector_store_key"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.4,
+      "position": [
+        720,
+        208
+      ],
+      "id": "e9bc60a5-4ad2-4a0b-8a13-c41a07f0265f",
+      "name": "Simple Vector Store"
+    },
+    {
+      "parameters": {
+        "modelName": "embed-multilingual-v3.0"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsCohere",
+      "typeVersion": 1,
+      "position": [
+        736,
+        336
+      ],
+      "id": "0ae5b71f-d93e-4f4d-b877-efd90aaa24a0",
+      "name": "Embeddings Cohere",
+      "credentials": {
+        "cohereApi": {
+          "id": "k70gMaF1EGxWCA8s",
+          "name": "Cohere account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1vFOEJrPZUHe-7JZZd5KhPQ5iU2s5QiHEPH_PViv0lBc",
+          "mode": "list",
+          "cachedResultName": "Registro",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vFOEJrPZUHe-7JZZd5KhPQ5iU2s5QiHEPH_PViv0lBc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Clientes",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "NOMBRE COMPLETO": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('NOMBRE_COMPLETO', ``, 'string') }}",
+            "PRODUCTO": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('PRODUCTO', ``, 'string') }}",
+            "CANTIDAD": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('CANTIDAD', ``, 'string') }}",
+            "DIRECCION": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('DIRECCION', ``, 'string') }}",
+            "CIUDAD": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('CIUDAD', ``, 'string') }}",
+            "TELEFONO": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('TELEFONO', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "NOMBRE COMPLETO",
+              "displayName": "NOMBRE COMPLETO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "PRODUCTO",
+              "displayName": "PRODUCTO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "CANTIDAD",
+              "displayName": "CANTIDAD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "DIRECCION",
+              "displayName": "DIRECCION",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "CIUDAD",
+              "displayName": "CIUDAD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TELEFONO",
+              "displayName": "TELEFONO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        448,
+        192
+      ],
+      "id": "6866c690-5ba4-4988-9652-d661672fcfed",
+      "name": "Registro",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4s2za2yOA44cp1LH",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "\"Usa esta herramienta SIEMPRE que el cliente pregunte por productos disponibles, precios, colores, tamaños o stock del catálogo (fibras capilares, shampoo, ceras, aceites, esponjas)\".",
+        "documentId": {
+          "__rl": true,
+          "value": "12OYKlwjijdAyAtrBNTgQjycJm5-mOiG_2oqdHA0i-yQ",
+          "mode": "list",
+          "cachedResultName": "Info-Productos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12OYKlwjijdAyAtrBNTgQjycJm5-mOiG_2oqdHA0i-yQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Inventario",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        576,
+        176
+      ],
+      "id": "8ad7a0c8-e9cd-4255-8fee-1c27c94d1cd6",
+      "name": "Info-productos",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4s2za2yOA44cp1LH",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        96,
+        -416
+      ],
+      "id": "baf3cbb6-2ae1-4dca-9827-2b0107731ee1",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "url": "https://github.com/jairohuseche/Asistent-Ecommerce/blob/main/Politicas_y_Catalogo_RAG.md.docx",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        304,
+        -416
+      ],
+      "id": "e3d7fa8b-57de-49b2-8f27-1ec8529fcd19",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "memoryKey": {
+          "__rl": true,
+          "mode": "list",
+          "value": "vector_store_key"
+        },
+        "clearStore": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.4,
+      "position": [
+        512,
+        -416
+      ],
+      "id": "1f0d3279-cbf2-4d44-8b4c-3e0c3305b3c5",
+      "name": "Simple Vector Store1"
+    },
+    {
+      "parameters": {
+        "modelName": "embed-multilingual-v3.0"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsCohere",
+      "typeVersion": 1,
+      "position": [
+        448,
+        -256
+      ],
+      "id": "7be099de-6032-4d75-9d3f-6a31f70ff61c",
+      "name": "Embeddings Cohere1",
+      "credentials": {
+        "cohereApi": {
+          "id": "k70gMaF1EGxWCA8s",
+          "name": "Cohere account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        -272
+      ],
+      "id": "2d7795e6-745b-4722-a64a-0a923a7a6ffd",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "2bd1f0a5-3baa-4f16-95b9-eca5bf526389",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        -32,
+        -48
+      ],
+      "id": "ab54626c-c0c5-4512-a952-ed3c0e8ea797",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        192
+      ],
+      "id": "d1587cd7-a67a-471b-80ef-33582a9f8d0f",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "SjArOtC8KgTNGTNZ",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Mensajes Telegram').item.json.message.chat.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        336,
+        160
+      ],
+      "id": "4e8672c1-91ee-466c-8598-a00b92ecf998",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "112b9b7b-81a4-41d9-b48f-080dafc2b483",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        544,
+        -64
+      ],
+      "id": "8bca9022-b5c6-4f32-8dcb-d4c5e99fc77e",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "content": "## Ingesta RAG (Carga de Conocimiento)\nDescarga automática del archivo Markdown con las políticas, precios y marco legal desde GitHub para vectorizarlos e indexarlos en memoria antes de procesar consultas.",
+        "height": 144,
+        "width": 480,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        304,
+        -560
+      ],
+      "typeVersion": 1,
+      "id": "fe684bfe-6c5f-4072-bd52-4f020cd3ee9a",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Validacion de Entrada (Manejo de Errores)\n \nFiltra que el mensaje recibido desde Telegram contenga texto válido. Si llega vacío, desvía el flujo para enviar una respuesta de control y evitar fallos en el agente.",
+        "height": 144,
+        "width": 496
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -272,
+        -192
+      ],
+      "typeVersion": 1,
+      "id": "f15d8b3d-9583-493a-80c6-3103bb6230aa",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## IA Agent & Herramientas \nCerebro autónomo respaldado por OpenAI, memoria conversacional por usuario, base vectorial (RAG) para políticas y Google Sheets (Info-productos y Registro) para inventario y pedidos.",
+        "height": 128,
+        "width": 480,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        192,
+        320
+      ],
+      "typeVersion": 1,
+      "id": "1d0345ce-8d73-4e1e-845c-d9f3aacada48",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Manejo de Errores y Salida  \nValida que la respuesta del LLM no esté vacía. Si ocurre un fallo o intermitencia técnica, captura el error y notifica automáticamente al usuario sobre los horarios de atención.",
+        "width": 352,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        912,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "0a729dff-5677-4c18-a3fa-ac0e7a44e24b",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        -208,
+        -48
+      ],
+      "id": "9c97587e-3ebd-4a1e-9943-cc4fdbf96ccd",
+      "name": "Mensajes Telegram",
+      "webhookId": "064bc5d7-8deb-42ee-833c-ec0b44016288",
+      "credentials": {
+        "telegramApi": {
+          "id": "D9qBLQ8aM2dwq6b3",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Mensajes Telegram').item.json.message.from.id }}",
+        "text": "Hola, por el momento solo puedo procesar mensajes de texto. Por favor escríbeme tu consulta o el producto que buscas.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        64,
+        96
+      ],
+      "id": "d92864bd-076d-4d07-b2c3-1403aafe2f26",
+      "name": "Mensaje de Error 1",
+      "webhookId": "1f6e52d4-3d74-43d1-a821-bc5985aaa3ca",
+      "credentials": {
+        "telegramApi": {
+          "id": "D9qBLQ8aM2dwq6b3",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Mensajes Telegram').item.json.message.from.id }}",
+        "text": "En este momento estoy presentando una intermitencia técnica. Un asesor humano revisará tu mensaje en nuestro horario habitual (Lunes a viernes de 8:00 a.m. a 6:00 p.m. y sábados de 8:00 a.m. a 12:00 p.m.).",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        784,
+        16
+      ],
+      "id": "61ed0861-fc05-488b-ba2d-dd10ca63eb9d",
+      "name": "Mensaje de Error 2",
+      "webhookId": "6133ee72-9212-477c-af8b-cd073fcdb99f",
+      "credentials": {
+        "telegramApi": {
+          "id": "D9qBLQ8aM2dwq6b3",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Mensajes Telegram').item.json.message.from.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        784,
+        -144
+      ],
+      "id": "7b10bbac-0431-447e-8251-df903e55a54f",
+      "name": "Respuesta Mensaje Telegrama",
+      "webhookId": "1065f28d-9317-41de-93d0-199dccd0254f",
+      "credentials": {
+        "telegramApi": {
+          "id": "D9qBLQ8aM2dwq6b3",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Cohere": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Simple Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registro": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Info-productos": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Simple Vector Store1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Cohere1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Simple Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Simple Vector Store1",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mensaje de Error 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Respuesta Mensaje Telegrama",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mensaje de Error 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensajes Telegram": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "249cf007-3b93-4e6d-991e-1c1f096771aa",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4c5fd2e34bff5ba861f1c376fa12482c990e5166f3838aef24b9855fddf0b62a"
+  },
+  "nodeGroups": [],
+  "id": "Po593mFPrafO8RAR",
+  "tags": []
+}
